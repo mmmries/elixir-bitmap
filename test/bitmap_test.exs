@@ -10,21 +10,21 @@ defmodule BitmapTest do
 
   test "it knows what numbers it contains" do
     bitmap = Bitmap.create([1,3,5])
-    assert Bitmap.include?(bitmap, 0) == false
-    assert Bitmap.include?(bitmap, 1) == true
-    assert Bitmap.include?(bitmap, 2) == false
-    assert Bitmap.include?(bitmap, 3) == true
-    assert Bitmap.include?(bitmap, 4) == false
-    assert Bitmap.include?(bitmap, 5) == true
+    assert Enum.member?(bitmap, 0) == false
+    assert Enum.member?(bitmap, 1) == true
+    assert Enum.member?(bitmap, 2) == false
+    assert Enum.member?(bitmap, 3) == true
+    assert Enum.member?(bitmap, 4) == false
+    assert Enum.member?(bitmap, 5) == true
   end
 
   test "it knows how many numbers it holds" do
     bitmap = Bitmap.create(5..10)
-    assert Bitmap.size(bitmap) == Enum.count(5..10)
+    assert Enum.count(bitmap) == Enum.count(5..10)
   end
 
   test "generating a sorted list" do
     bitmap = Bitmap.create([99,55,66,11,22,0])
-    assert Bitmap.to_list(bitmap) == [0,11,22,55,66,99]
+    assert Enum.into(bitmap, []) == [0,11,22,55,66,99]
   end
 end
