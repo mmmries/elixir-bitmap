@@ -5,7 +5,8 @@ defmodule BitmapTest do
     bitmap = Bitmap.create
     bitmap = Bitmap.store(bitmap, 3)
     bitmap = Bitmap.store(bitmap, 5)
-    assert bitmap == 0b101000
+    %Bitmap{map: map} = bitmap
+    assert map == 0b101000
   end
 
   test "it knows what numbers it contains" do
