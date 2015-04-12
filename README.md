@@ -10,8 +10,14 @@ How to Use It
 -------------
 ```elixir
 bitmap = Bitmap.create([8,4,9,1,5])
-Bitmap.include?(bitmap, 4) # => true
-Bitmap.include?(bitmap, 6) # => false
-Bitmap.size(bitmap) # => 5
-Bitmap.to_list(bitmap) # => [1,4,5,8,9]
+Enum.member?(bitmap, 4) # => true
+Enum.member?(bitmap, 6) # => false
+Enum.count(bitmap) # => 5
+Enum.into(bitmap, []) # => [1,4,5,8,9]
+Enum.each(bitmap, &( IO.puts(&1) ))
+# => 1
+# => 4
+# => 5
+# => 8
+# => 9
 ```
