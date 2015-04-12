@@ -5,8 +5,8 @@ defmodule BitmapTest do
     bitmap = Bitmap.create
     bitmap = Bitmap.store(bitmap, 3)
     bitmap = Bitmap.store(bitmap, 5)
-    %Bitmap{map: map} = bitmap
-    assert map == 0b101000
+    %Bitmap{chunks: chunks} = bitmap
+    assert chunks == %{0 => 0b101000}
   end
 
   test "it knows what numbers it contains" do
@@ -27,5 +27,10 @@ defmodule BitmapTest do
   test "generating a sorted list" do
     bitmap = Bitmap.create([99,55,66,11,22,0])
     assert Enum.into(bitmap, []) == [0,11,22,55,66,99]
+  end
+
+  test "storing large numbers" do
+    bitmap = Bitmap.create([801_555_1234, 801_555_1111])
+    assert Enum.into(bitmap, []) == [801_555_1111, 801_555_1234]
   end
 end
