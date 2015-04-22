@@ -5,8 +5,8 @@ defmodule BitmapTest do
     bitmap = Bitmap.create
     bitmap = Bitmap.store(bitmap, 3)
     bitmap = Bitmap.store(bitmap, 5)
-    %Bitmap{chunks: chunks} = bitmap
-    assert chunks == %{0 => 0b101000}
+    %Bitmap{bits: bits} = bitmap
+    assert bits == << 5::size(6) >>
   end
 
   test "it knows what numbers it contains" do

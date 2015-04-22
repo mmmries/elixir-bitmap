@@ -1,33 +1,52 @@
 defimpl Enumerable, for: Bitmap do
   use Bitwise
 
-  def count(%Bitmap{chunks: chunks}) do
-    count = chunks |> Dict.values |> Enum.map(&(count(&1,0))) |> Enum.reduce(0, &+/2)
-    {:ok, count}
+  def count(%Bitmap{bits: bits}) do
+    {:ok, count(bits, 0)}
   end
-  def count(0, acc), do: acc
-  def count(chunk, acc) when is_integer(chunk) do
-    case chunk &&& 1 do
-      1 -> count(chunk >>> 1, acc + 1)
-      0 -> count(chunk >>> 1, acc)
-    end
-  end
+  def count(<< >>, acc), do: acc
+  def count(<<1::size(1), rest::bitstring>>, acc), do: count(rest, acc+1)
+  def count(<<0::size(1), rest::bitstring>>, acc), do: count(rest, acc)
 
   def member?(bitmap, number), do: {:ok, Bitmap.member?(bitmap, number) }
 
   def reduce(_bitmap, {:halt, acc}, _reducer), do: {:halted, acc}
   def reduce(bitmap, {:suspend, acc}, reducer), do: {:suspended, acc, &reduce(bitmap, &1, reducer)}
-  def reduce(%Bitmap{chunks: chunks}, acc, reducer) do
-    chunks = Map.to_list(chunks)
-    reduce({chunks}, acc, reducer)
+  def reduce(%Bitmap{bits: bits}, acc, reducer) do
+    reduce({bits,0}, acc, reducer)
   end
-  def reduce({[]}, {:cont, acc}, _reducer), do: {:done, acc}
-  def reduce({[h|t]}, {:cont, acc}, reducer), do: reduce({t, h, 0}, {:cont, acc}, reducer)
-  def reduce({chunks,{_address,0},_which_bit}, acc, reducer), do: reduce({chunks}, acc, reducer)
-  def reduce({chunks,{address,chunk}, which_bit}, {:cont, acc}, reducer) do
-    case chunk &&& 1 do
-      1 -> reduce({chunks, {address,chunk>>>1}, which_bit+1}, reducer.(Bitmap.to_number(address,which_bit),acc), reducer)
-      0 -> reduce({chunks, {address,chunk>>>1}, which_bit+1}, {:cont, acc}, reducer)
-    end
+  def reduce({<< >>,_which_bit}, {:cont,acc}, _reducer), do: {:done, acc}
+  def reduce({<<0::size(262_144), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+262_144}, {:cont, acc}, reducer)
+  end
+  def reduce({<<0::size(65_536), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+65_536}, {:cont, acc}, reducer)
+  end
+  def reduce({<<0::size(16_384), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+16_384}, {:cont, acc}, reducer)
+  end
+  def reduce({<<0::size(4096), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+4096}, {:cont, acc}, reducer)
+  end
+  def reduce({<<0::size(1024), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+1024}, {:cont, acc}, reducer)
+  end
+  def reduce({<<0::size(256), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+256}, {:cont, acc}, reducer)
+  end
+  def reduce({<<0::size(64), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+64}, {:cont, acc}, reducer)
+  end
+  def reduce({<<0::size(16), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+16}, {:cont, acc}, reducer)
+  end
+  def reduce({<<0::size(4), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+4}, {:cont, acc}, reducer)
+  end
+  def reduce({<<0::size(1), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+1}, {:cont, acc}, reducer)
+  end
+  def reduce({<<1::size(1), rest::bitstring>>, which_bit}, {:cont,acc}, reducer) do
+    reduce({rest,which_bit+1}, reducer.(which_bit, acc), reducer)
   end
 end

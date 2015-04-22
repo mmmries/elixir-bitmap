@@ -1,34 +1,26 @@
 defmodule Bitmap do
   use Bitwise
 
-  @chunk_size 1024
-
-  defstruct chunks: %{}
+  defstruct bits: ""
 
   def create, do: %Bitmap{}
   def create(list) do
     Enum.reduce(list, create, &( store(&2, &1) ))
   end
 
-  def member?(%Bitmap{chunks: chunks}, number) do
-    {address, binary} = address_and_binary(number)
-    chunk = Dict.get(chunks, address, 0)
-    (chunk &&& binary) > 0
+  def member?(%Bitmap{bits: bits}, number) do
+    case bits do
+      << _pre::size(number), 1::size(1), _suff::bitstring >> -> true
+      _ -> false
+    end
   end
 
-  def store(%Bitmap{chunks: chunks} = bitmap, number) do
-    {address, binary} = address_and_binary(number)
-    chunk = Dict.get(chunks, address, 0) ||| binary
-    %Bitmap{bitmap | chunks: Dict.put(chunks, address, chunk)}
+  def store(%Bitmap{bits: bits} = bitmap, number) when bit_size(bits) <= number do
+    padding = number - bit_size(bits)
+    %Bitmap{bitmap | bits: << bits::bitstring , 0::size(padding), 1::size(1) >>}
   end
-
-  def to_number(address, which_bit) do
-    (address * @chunk_size) + which_bit
-  end
-
-  defp address_and_binary(number) do
-    address = div(number, @chunk_size)
-    binary = (1 <<< rem(number, @chunk_size))
-    {address, binary}
+  def store(%Bitmap{bits: bits} = bitmap, number) do
+    << prefix::bitstring-size(number), _bit::size(1), suffix::bitstring >> = bits
+    %Bitmap{bitmap | bits: << prefix::bitstring, 1::size(1), suffix::bitstring >>}
   end
 end
